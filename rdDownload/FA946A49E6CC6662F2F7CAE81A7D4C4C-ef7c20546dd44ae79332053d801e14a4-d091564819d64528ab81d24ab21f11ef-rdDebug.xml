@@ -1,0 +1,16 @@
+<ChartCanvas rdIdeIdx="7" PlotBackgroundColor="#FFFFFF" BackgroundColor="#FFFFFF" BorderColor="#FFFFFF" BorderRadius="0" BorderColorTransparency="15" ID="Serie_0" ChartDrillToStatus="0" isSSRMDashboard="False" OriginalChartWidth="" OriginalChartHeight="" ChartHeight="400">
+  <Series ChartYDataColumn="value" Type="Bar" rdIdeIdx="8" ChartSymbolEdgeColor="Transparent" Transparency="3" Color="#3FB0AC" BarBorderThickness="0">
+    <DataLayer Type="Static" OriginalType="">
+      <StaticDataRow name="1" value="1" />
+      <StaticDataRow name="2" value="2" />
+      <StaticDataRow name="3" value="3" />
+      <StaticDataRow name="4" value="4" />
+    </DataLayer>
+  </Series>
+  <ChartXAxis>
+    <AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" />
+  </ChartXAxis>
+  <ChartYAxis>
+    <AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" />
+  </ChartYAxis>
+</ChartCanvas>

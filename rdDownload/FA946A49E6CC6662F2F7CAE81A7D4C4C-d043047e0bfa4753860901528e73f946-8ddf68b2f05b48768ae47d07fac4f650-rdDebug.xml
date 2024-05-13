@@ -1,0 +1,49 @@
+<Report ID="Default" rdIdeIdx="0">
+  <StyleSheet StyleSheet="rdTemplate/rdTheme/Signal/Theme.css" />
+  <DefinitionModifierFile DefinitionModifierFile="C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\DemoApp\rdTemplate\rdTheme\Signal\ThemeModifier.xml" ThemeName="Signal" />
+  <StyleSheet StyleSheet="" Theme="Signal" />
+  <Body rdIdeIdx="1">
+    <Button Caption="export" ID="btn_export" rdIdeIdx="2">
+      <Action ID="a" Type="PDF" rdIdeIdx="3">
+        <Target Report="Default" Type="PDF" rdIdeIdx="4" />
+      </Action>
+    </Button>
+    <DataTable ID="dt_export" rdIdeIdx="5" Class="rdThemeDataTable" ColumnHeaderClass="rdThemeDataTableHeader" CaptionClass="rdThemeDataTableMainHeader">
+      <DataLayer Type="Static">
+        <StaticDataRow name="1" value="1" />
+        <StaticDataRow name="2" value="2" />
+        <StaticDataRow name="3" value="3" />
+        <StaticDataRow name="4" value="4" />
+      </DataLayer>
+      <AutoColumns rdIdeIdx="6" />
+    </DataTable>
+    <ChartCanvas rdIdeIdx="7" PlotBackgroundColor="#FFFFFF" BackgroundColor="#FFFFFF" BorderColor="#FFFFFF" BorderRadius="0" BorderColorTransparency="15">
+      <Series ChartYDataColumn="value" Type="Bar" rdIdeIdx="8" ChartSymbolEdgeColor="Transparent" Transparency="3" Color="#3FB0AC" BarBorderThickness="0">
+        <DataLayer Type="Static">
+          <StaticDataRow name="1" value="1" />
+          <StaticDataRow name="2" value="2" />
+          <StaticDataRow name="3" value="3" />
+          <StaticDataRow name="4" value="4" />
+        </DataLayer>
+      </Series>
+      <ChartXAxis>
+        <AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" />
+      </ChartXAxis>
+      <ChartYAxis>
+        <AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" />
+      </ChartYAxis>
+    </ChartCanvas>
+  </Body>
+  <LineBreak />
+  <Image ID="rdDebug" Caption="rdTemplate/rdDebug.png" Tooltip="Show the Debugger Trace Report" AltText="Chart Debug" Style="position:fixed;bottom:0px;right:0px;border-style:none;">
+    <Action Type="Link">
+      <Target Type="Link" Link="-rdDebugURL-" FrameID="Debugger Trace" />
+    </Action>
+    <EventHandler DhtmlEvent="onmouseover">
+      <Action Type="Javascript" Javascript="this.setAttribute('src','rdTemplate/rdDebugHover.png')" />
+    </EventHandler>
+    <EventHandler DhtmlEvent="onmouseout">
+      <Action Type="Javascript" Javascript="this.setAttribute('src','rdTemplate/rdDebug.png')" />
+    </EventHandler>
+  </Image>
+</Report>

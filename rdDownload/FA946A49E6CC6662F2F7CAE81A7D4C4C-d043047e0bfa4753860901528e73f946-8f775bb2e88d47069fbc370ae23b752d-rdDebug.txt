@@ -1,0 +1,56 @@
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:msxsl="urn:schemas-microsoft-com:xslt"
+    xmlns:rdXslExtension="urn:rdXslExtension"
+>
+
+<xsl:output method="html"
+ encoding="utf-8"
+ indent="no" />
+
+<xsl:template match="/">
+
+<HTML >
+<HEAD>
+<TITLE>Demo</TITLE><META http-equiv="X-UA-Compatible" content="IE=edge"/><LINK rel="stylesheet" type="text/css" href="rdTemplate/rdInputTextDelimiter/rdInputTextDelimiter.css" />
+<LINK rel="stylesheet" type="text/css" href="rdTemplate/rdYui/rdQuicktip.css" />
+<LINK rel="stylesheet" type="text/css" href="rdTemplate/rdPopup/rdPopupPanel.css" />
+
+<LINK rel="stylesheet" type="text/css" href="rdTemplate/rdTheme/Signal/Theme.css" /><META name="lgxver" content="12.8.858.275"/>
+<SCRIPT type="text/javascript">(function(){if(window.external){ try {window.external.ClearOnLoad();} catch(err){return true;}; window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {try{window.external.ShowMessage(errorMsg, url, lineNumber); return true;}catch(err){return false;}};}})();</SCRIPT><SCRIPT LANGUAGE="JAVASCRIPT" src="rdTemplate/rdInputTextDelimiter/rdInputTextDelimiter.js?v=12.8.858.275"></SCRIPT>
+<SCRIPT LANGUAGE="JAVASCRIPT" src="rdTemplate/rdYui.min.js?v=12.8.858.275"></SCRIPT>
+<SCRIPT LANGUAGE="JAVASCRIPT" src="rdTemplate/rdScript.min.js?v=12.8.858.275"></SCRIPT>
+<SCRIPT LANGUAGE="JAVASCRIPT" src="rdTemplate/rdChartCanvas.min.js?v=12.8.858.275"></SCRIPT>
+<SCRIPT LANGUAGE="JAVASCRIPT" src="rdTemplate/../rdDownload/rdLocalizationInfo_FA946A49E6CC6662F2F7CAE81A7D4C4C.js"></SCRIPT>
+
+<SCRIPT TYPE="text/javascript">function rdBodyLoad() {document.body.appendChild(YUI.Env.cssStampEl);
+rdColumnDisplayVisibility()
+}</SCRIPT>
+<SCRIPT TYPE="text/javascript">function rdValidateForm() { }</SCRIPT><SCRIPT TYPE="text/javascript" rdAjaxRunOnLoad="True"> Y.use('waitpanel','quicktip','chartCanvas', function(Y) { if(LogiXML.StartupScripts) { if(LogiXML.StartupScripts.onDomReady) { var currentSubscriberIndex = LogiXML.StartupScripts.onDomReady.indexOf(onDomReadyFunc); if(currentSubscriberIndex != -1) { Y.detach('domready', LogiXML.StartupScripts.onDomReady[currentSubscriberIndex]); LogiXML.StartupScripts.onDomReady.splice(currentSubscriberIndex,1); } } } function onDomReadyFunc() { LogiXML.WaitPanel.pageWaitPanel = LogiXML.WaitPanel.pageWaitPanel || new Y.LogiXML.WaitPanel({defaultCaption:'Please Wait...',defaultClass:'rdThemeWaitPanel',defaultCaptionClass:'rdThemeWaitCaption'});LogiXML.quicktips = LogiXML.quicktips || new Y.LogiXML.rdQuicktip({triggerSelector:  '.tooltip' }); LogiXML.quicktips.render();Y.LogiXML.ChartCanvas.createElements();LogiXML.WaitPanel.pageWaitPanel = LogiXML.WaitPanel.pageWaitPanel || new Y.LogiXML.WaitPanel({defaultCaption:'Please Wait...',defaultClass:'rdThemeWaitPanel',defaultCaptionClass:'rdThemeWaitCaption'}); }; Y.on('domready', onDomReadyFunc); if(LogiXML.StartupScripts){ if(!LogiXML.StartupScripts.onDomReady){ LogiXML.StartupScripts.onDomReady = []; } LogiXML.StartupScripts.onDomReady.push(onDomReadyFunc); } }); </SCRIPT></HEAD>
+<xsl:for-each select="/rdData" ><BODY onload="rdBodyLoad()">
+<FORM NAME="rdForm" method="POST">
+<input type="hidden" id="rdCSRFKey1" name="rdCSRFKey" value="ae4a8521-6baa-451e-9a82-4fff257b8dfe" /><div id="rdMainBodyStart"></div><div id="rdMainBody"><a   onclick="SubmitForm('rdPage.aspx?rdReport=Default&amp;rdReportFormat=PDF','','false','',null,['','','']);"  id="a"><INPUT type="button" VALUE="export" id="btn_export" NAME="btn_export"></INPUT>
+</a><DIV id="rdDataTableDiv-dt_export"><TABLE style=""  CLASS="rdThemeDataTable" id="dt_export"><COL  id="rdAutoColname"></COL><COL  id="rdAutoColvalue"></COL>
+<xsl:variable name="nLastPageNr" select="rdXslExtension:GetTokenValue('@Session.dt_export-LastPageNr~')" />
+<xsl:variable name="nPageRowCnt" select="rdXslExtension:GetTokenValue('@Session.dt_export-PageRowCnt~')" />
+<xsl:variable name="nPageNr" select="rdXslExtension:GetTokenValue('@Session.dt_export-PageNr~')" />
+
+<THEAD style="display:table-header-group"><TR><TH  scope="col" CLASS="rdThemeDataTableHeader" id="rdAutoColname-TH">name</TH><TH  scope="col" CLASS="rdThemeDataTableHeader" id="rdAutoColvalue-TH">value</TH></TR>
+</THEAD>
+
+	<xsl:for-each select="/*/dt_export" >
+    <xsl:variable name="dt_export-Position" select="position() + $nPageRowCnt * ($nPageNr - 1)"/>
+      <TR Row="{position() + $nPageRowCnt * ($nPageNr - 1)}" ><TD id='rdAutoColname_Row{position()}'    CLASS="rdThemeDataTableCell"><xsl:attribute name="id"><xsl:value-of select="concat('rdAutoColname_Row',position() + $nPageRowCnt * ($nPageNr - 1))"/></xsl:attribute><SPAN  ><xsl:attribute name="id"><xsl:value-of select="concat('rdAutoLabelname_Row',position() + $nPageRowCnt * ($nPageNr - 1))"/></xsl:attribute><xsl:value-of select="@name"/></SPAN></TD>
+<TD id='rdAutoColvalue_Row{position()}'    CLASS="rdThemeDataTableCell"><xsl:attribute name="id"><xsl:value-of select="concat('rdAutoColvalue_Row',position() + $nPageRowCnt * ($nPageNr - 1))"/></xsl:attribute><SPAN  ><xsl:attribute name="id"><xsl:value-of select="concat('rdAutoLabelvalue_Row',position() + $nPageRowCnt * ($nPageNr - 1))"/></xsl:attribute><xsl:value-of select="@value"/></SPAN></TD>
+</TR><xsl:text xml:space="preserve">&#13;&#10;</xsl:text>
+
+      
+	</xsl:for-each>
+
+</TABLE><DIV id="rdDataTableDivEnd-dt_export"></DIV></DIV><rdChartCanvas RequestedPage="Default" DebuggerUrl="rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d574c1be9f8d45ec915658194e1ecc7e-rdDebug.htm" DebugFilename="C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\DemoApp\rdDownload\FA946A49E6CC6662F2F7CAE81A7D4C4C-d574c1be9f8d45ec915658194e1ecc7e.htm" DebugGuid="d574c1be9f8d45ec915658194e1ecc7e" UnderDashboardOrRA="False"><ChartCanvas rdIdeIdx="7" PlotBackgroundColor="#FFFFFF" BackgroundColor="#FFFFFF" BorderColor="#FFFFFF" BorderRadius="0" BorderColorTransparency="15" ID="Serie_0" ChartDrillToStatus="0" isSSRMDashboard="False"><Series ChartYDataColumn="value" Type="Bar" rdIdeIdx="8" ChartSymbolEdgeColor="Transparent" Transparency="3" Color="#3FB0AC" BarBorderThickness="0"><DataLayer OriginalType="Static" Type="EmptyDataLayer"><StaticDataRow name="1" value="1" /><StaticDataRow name="2" value="2" /><StaticDataRow name="3" value="3" /><StaticDataRow name="4" value="4" /></DataLayer></Series><ChartXAxis><AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" /></ChartXAxis><ChartYAxis><AxisLabelStyle FontFamily="Segoe UI" FontWeight="Normal" FontColor="#363B42" FontSize="14" /></ChartYAxis></ChartCanvas></rdChartCanvas><BR></BR><a  href="javascript:void(0);" onclick="NavigateLink2('rdDownload\x2fFA946A49E6CC6662F2F7CAE81A7D4C4C-d574c1be9f8d45ec915658194e1ecc7e-rdDebug.htm?','Debugger Trace','false','','',['','',''],null);" ><IMG src="rdTemplate/rdDebug.png" TITLE="Show the Chart's Debugger Trace Report" alt=" Chart Debug" id="rdDebugChart" STYLE="border-style:none;" onmouseover="this.setAttribute('src','rdTemplate/rdDebugHover.png');" onmouseout="this.setAttribute('src','rdTemplate/rdDebug.png');"></IMG></a><BR></BR><INPUT TYPE="HIDDEN" VALUE="2024-01-01" id="rdConstantFirstDayOfFiscalYearHidden" NAME="rdConstantFirstDayOfFiscalYearHidden"></INPUT></div><div id="rdMainBodyEnd"></div><BR></BR><a  href="javascript:void(0);" onclick="NavigateLink2('-rdDebugURL-','Debugger Trace','false','','',['','',''],null);" ><IMG src="rdTemplate/rdDebug.png" TITLE="Show the Debugger Trace Report" alt=" Chart Debug" id="rdDebug" STYLE="position:fixed;bottom:0px;right:0px;border-style:none;" onmouseover="this.setAttribute('src','rdTemplate/rdDebugHover.png');" onmouseout="this.setAttribute('src','rdTemplate/rdDebug.png');"></IMG></a><INPUT TYPE="HIDDEN" ID="rdShowElementHistory" NAME="rdShowElementHistory"></INPUT><rdHidden></rdHidden></FORM>
+</BODY>
+</xsl:for-each></HTML>
+
+
+</xsl:template>
+</xsl:stylesheet>

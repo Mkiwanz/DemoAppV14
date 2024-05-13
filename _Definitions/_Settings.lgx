@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Setting
+	ID="_settings"
+	>
+	<GlobalCSS
+		ID="themeSignal"
+		Theme="Signal"
+	/>
+	<Application
+		Caption="Demo"
+	/>
+	<Path
+		AppPath="http://localhost:8080/DemoApp"
+	/>
+	<General
+		rdDebuggerStyle="DebuggerLinks"
+		RepoFriendly="True"
+		ScriptingLanguage="JavaScript"
+		>
+		<WaitPage/>
+	</General>
+	<Connections/>
+	<TeamDevelopment/>
+</Setting>

@@ -1,0 +1,278 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+   <head>
+      <meta http-equiv="CACHE-CONTROL" content="NO-CACHE" />
+      <meta http-equiv="Expires" content="-1" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>rdDebug</title>
+      <style>
+	  BODY {color: darkslategray; background-color: white; margin-right: 10px; margin-left: 10px; font-size: 11px; font-family: verdana, arial, sans-serif;}
+.MoreInfo { BACKGROUND: Gray; color:White; }
+.ErrDiv { BACKGROUND: #f0f0f0; }
+.MajorTitle { font-size:9pt; font-weight:bold; }
+.bld { font-weight:bold; }
+.InfHeader { font-weight:bold; text-align: center; width: 100%; }
+.WrnHeader { font-weight:bold; text-align: center; width: 100%; }
+.ErrHeader { color:Maroon; font-size:12pt; font-weight:bold; width: 100%; }
+.ErrMessage { color:Maroon; font-size:9pt; width: 100%; }
+.BodyTable { border-collapse: collapse; width: 99%; }
+.DebugTable { border-collapse: collapse; height: 11px; width: auto; border: solid 1px #3f60af; }
+.DebugTable tr th { text-align: left; }
+.DebugTable tr td { border: solid 1px #bbbbbb; font-size: 11px; }
+.BodyTable tr td table .StepRow td { border-top: solid 1px #3f60af; background-color: #454545; }
+.HeaderRow th { background-color: #eaeff8; border-bottom: solid 1px #3f60af; }
+.LogiDarkGreen { color: #639e12; font-weight: normal; font-size: 18px; }
+.logiPurple { color: #3f60af; font-size: 18px; }
+.TimeRight { text-align: right; padding-right: 4px; }
+.SecondHeader { background-color: #3f60af; color: white; padding-left: 4px; font-weight: bold; }
+.title { font-size: 14px; font-weight:bold; padding-top: 8px;padding-bottom:8px; }
+.GroupHdr { background-color: #cc0033; color: white; padding-left: 4px; font-weight: bold; }
+.TopError { border: solid 1px #cc0033; }
+.TopError tr td { border-top: solid 1px #cc0033; padding-left: 4px; font-size: 11px; }
+.InnerError { border-left: solid 1px #cc0033; border-right: solid 1px #cc0033; border-bottom: solid 1px #cc0033; font-size: 11px; }
+.InnerError tr td { padding-left: 4px; font-size: 11px; }
+.InnerErrorMessage td { padding-left: 4px; color: #cc0033; font-size: 11px; }
+td.progress { width: 10%; }
+td.progress .text { position: relative; }
+td.progress span { position: absolute; top: 0px; right: 0px; }
+div.progressBar, div.previousElapsed { background-color: #d4e4a4; float: left; clear: right; } /* Clear right is for IE7 */
+div.previousElapsed { background-color: #efffbf; }
+/* a.generateProgressBars { color: #0000EE; } */
+td,th {
+	font-size:11px;
+	/*border: 1px solid black;*/
+	padding: 0;
+	white-space: pre;           /* CSS 2.0 */
+	white-space: pre-wrap;      /* CSS 2.1 */
+	white-space: pre-line;      /* CSS 3.0 */
+	white-space: -pre-wrap;     /* Opera 4-6 */
+	white-space: -o-pre-wrap;   /* Opera 7 */
+	white-space: -moz-pre-wrap; /* Mozilla */
+	white-space: -hp-pre-wrap;  /* HP Printers */
+	word-wrap: break-word;      /* IE 5+ */
+}
+th {
+border: 1px solid black;
+}
+.title{margin-top:8px; margin-bottom:8px;}
+th{padding: 3px;}
+td {padding: 2px;}
+h3 {text-align:left;}
+</style>
+<script>
+    function rdDebugExpand(sID) {
+        var eleMoreInfo = document.getElementById(sID);
+        eleMoreInfo.style.display = "";
+        eleMoreInfo.parentNode.removeChild(eleMoreInfo.previousSibling);
+    }
+
+    function rdDebugDownloadTrace() {
+        var sDebugUrl = document.body.getAttribute("rdDebugUrl");
+        sDebugGroupPrefix = sDebugUrl.substr(sDebugUrl.indexOf("/rdDownload") + 12);
+        sDebugGroupPrefix = sDebugGroupPrefix.replace("-rdDebug.htm", "");
+        var sUrl = sDebugUrl.substr(0, sDebugUrl.indexOf("/rdDownload")) + "./rdTemplate/rdDebugDownload.aspx?TracePrefix=" + sDebugGroupPrefix;
+        if (window.location.href.indexOf("rdDownload") != -1) {
+            //The URL is already in the rdDownload folder.
+            sUrl = "." + sUrl;  //Go up one folder.
+        }
+        window.location.href = sUrl;
+    }
+
+     /*
+      * This code serves multiple purposes
+      * 1) General Debug
+      * 2) General Debug in ETL
+      * 3) Exception Page for our exceptions
+      *
+      * In some cases ../rdTemplate is transformed into rdTemplate.  And often this breaks the URLs
+      */
+    function rdBuildProgressBars() {
+
+        //Set a total time attribute in each node.
+        var nEndTime = 0;
+        var nlTimes = document.querySelectorAll('table.DebugTable tr > td:nth-last-child(2)');
+        for (i = nlTimes.length - 1; i > -1; i--) {  //Read backwards.
+            var tdTime = nlTimes[i]
+            var sTime = tdTime.textContent;
+            var nTime = parseFloat(sTime);
+            if (!isNaN(nTime)) {
+                if (nTime == 0) {
+                    //At the beginning of a time group.  The next time is an end time.
+                    nEndTime = 0;
+                }
+                if (nEndTime == 0) {
+                    nEndTime = nTime;
+                }
+                //var nTotalPercent = Math.round((nTime / nEndTime) * 100)
+                tdTime.parentNode.setAttribute("EndTime", nEndTime);
+            }
+        }
+
+        var previousTimeUsage = 0;
+        var lastColumn = document.querySelectorAll('table.DebugTable tr > td:nth-last-child(2)');
+        for (var i = 0; i < lastColumn.length; i++) {
+            var tdNode = lastColumn[i];
+
+            // Iterate through each and modify CSS
+            var totalTime = parseFloat(tdNode.parentNode.getAttribute("EndTime"))
+            if (totalTime != 0) {
+
+                var timeText = tdNode.innerText;
+                var time = parseFloat(timeText);
+                if (!isNaN(time)) {
+
+                    var percent = Math.round((time / totalTime) * 100),
+                        previousPercent = Math.round((previousTimeUsage / totalTime) * 100),
+                        elapsedSincePrevious = percent - previousPercent;
+
+                    tdNode.className += " progress";
+                    var html = '<div class="previousElapsed" style="width:' + previousPercent + '%;">&nbsp;</div>'
+                        + '<div class="progressBar" style="width:' + elapsedSincePrevious + '%;">&nbsp;</div>'
+                        + '<div class="text"><span>' + timeText + '</span></div>';
+
+                    tdNode.innerHTML = html;
+
+                    // Update previous UsageTime
+                    previousTimeUsage = time;
+                }
+            } else {
+                previousTimeUsage = 0
+            }
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        rdBuildProgressBars();
+
+        if (window.location.protocol.indexOf("http") != 0) {
+            var anchors = document.getElementsByTagName("A");
+            for (var i = 0; i < anchors.length; i++) {
+                var a = anchors[i];
+
+                var url = a.href;
+
+                if (url.indexOf("rdDebugDownloadTrace") >= 0) {
+                    a.style.display = "none";
+                    continue;
+                }
+
+                if (url.indexOf("javascript:") == 0 || url.lastIndexOf(".xml") != url.length - 4)
+                    continue;
+
+                var idx = url.indexOf("/rdDebugData.htm?url=");
+                if (idx >= 0)
+                    url = url.substr(idx + 21);
+
+                idx = url.lastIndexOf("/rdDownload/");
+
+                if (idx >= 0)
+                    url = url.substr(idx + 12);
+
+                a.href = url;
+            }
+        }
+    });
+</script>
+   </head>
+   <body rdDebugUrl="rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-rdDebug.htm">
+      <div><h3><span class="LogiDarkGreen">Logi</span> <span class="LogiPurple">Debugger Trace Report</span></h3></div>
+      <rdErrorMsgContent>
+         <rdErrorMessage />
+      </rdErrorMsgContent>
+
+      <rdDetailedReport>
+          <span id="DetailedReport" style="" >
+              <table border="0" class="BodyTable">
+                  <tr><td></td></tr>
+                  <tr>
+                      <td>
+                          <table class="DebugTable" border="0" cellspacing="0" style="table-layout:fixed;width:100%;white-space:nowrap;">
+                              <tr class="HeaderRow">
+                                  <th style="width:17%">Event</th>
+                                  <th style="width:17%;">Event Detail</th>
+                                  <th style="width:46%;">Value</th>
+                                  <th style="width:06%;text-align:center;">Time</th>
+                                  <th style="width:14%;text-align:center;">Timestamp</th>
+                              </tr>
+                              <tr><td>Debug&#160;</td><td>Started&#160;</td><td>2024/05/13 12:22:21.5 PM&#160;</td><td style="text-align: right;">.020</td><td style="text-align: right;">2024/05/13 12:22:21.562</td></tr>
+<tr><td>Server&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">.025</td><td style="text-align: right;">2024/05/13 12:22:21.567</td></tr>
+<tr><td>&#160;</td><td>Product Edition&#160;</td><td>Logi Info Studio and Server&#160;</td><td style="text-align: right;">.030</td><td style="text-align: right;">2024/05/13 12:22:21.572</td></tr>
+<tr><td>&#160;</td><td>Server Engine Version&#160;</td><td>12.8.858-SP3&#160;</td><td style="text-align: right;">.074</td><td style="text-align: right;">2024/05/13 12:22:21.616</td></tr>
+<tr><td>&#160;</td><td>File Version Number&#160;</td><td>12.8.858.275&#160;</td><td style="text-align: right;">.084</td><td style="text-align: right;">2024/05/13 12:22:21.626</td></tr>
+<tr><td>&#160;</td><td>Machine Name&#160;</td><td>KIWAN&#160;</td><td style="text-align: right;">.089</td><td style="text-align: right;">2024/05/13 12:22:21.631</td></tr>
+<tr><td>&#160;</td><td>IP Addresses&#160;</td><td>192.168.1.207, fe80::7a0:7c6f:c216:7bb%11, 2600:1700:66c0:7fc0:cc72:cef4:c18e:90ed, 2600:1700:66c0:7fc0::3c, 2600:1700:66c0:7fc0:f3fc:641d:6c2:f96c&#160;</td><td style="text-align: right;">.095</td><td style="text-align: right;">2024/05/13 12:22:21.637</td></tr>
+<tr><td>Browser&#160;</td><td>User Agent&#160;</td><td>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36&#160;</td><td style="text-align: right;">.101</td><td style="text-align: right;">2024/05/13 12:22:21.643</td></tr>
+<tr><td>Request Tokens&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">.106</td><td style="text-align: right;">2024/05/13 12:22:21.648</td></tr>
+<tr><td>Response Builder&#160;</td><td>Start&#160;</td><td>&#160;</td><td style="text-align: right;">.116</td><td style="text-align: right;">2024/05/13 12:22:21.658</td></tr>
+<tr><td>Requested URL&#160;</td><td>&#160;</td><td>http://localhost:8080/DemoApp/rdPage.aspx&#160;</td><td style="text-align: right;">.116</td><td style="text-align: right;">2024/05/13 12:22:21.658</td></tr>
+<tr><td>Java Settings&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">.116</td><td style="text-align: right;">2024/05/13 12:22:21.658</td></tr>
+<tr><td>&#160;</td><td>Java Version&#160;</td><td>17.0.11&#160;</td><td style="text-align: right;">.116</td><td style="text-align: right;">2024/05/13 12:22:21.658</td></tr>
+<tr><td>&#160;</td><td>Java VM name&#160;</td><td>OpenJDK 64-Bit Server VM&#160;</td><td style="text-align: right;">.134</td><td style="text-align: right;">2024/05/13 12:22:21.676</td></tr>
+<tr><td>&#160;</td><td>java.awt.headless&#160;</td><td>&#160;</td><td style="text-align: right;">.134</td><td style="text-align: right;">2024/05/13 12:22:21.676</td></tr>
+<tr><td>&#160;</td><td>java.home&#160;</td><td>C:\Program Files\RedHat\java-17-openjdk-17.0.11.0.9-1&#160;</td><td style="text-align: right;">.134</td><td style="text-align: right;">2024/05/13 12:22:21.676</td></tr>
+<tr><td>&#160;</td><td>Free VM Memory&#160;</td><td>815,824,736&#160;</td><td style="text-align: right;">.150</td><td style="text-align: right;">2024/05/13 12:22:21.692</td></tr>
+<tr><td>&#160;</td><td>Total VM Memory&#160;</td><td>1,073,741,824&#160;</td><td style="text-align: right;">.155</td><td style="text-align: right;">2024/05/13 12:22:21.697</td></tr>
+<tr><td>&#160;</td><td>Max VM Memory&#160;</td><td>4,244,635,648&#160;</td><td style="text-align: right;">.160</td><td style="text-align: right;">2024/05/13 12:22:21.702</td></tr>
+<tr><td>&#160;</td><td>Metaspace Memory&#160;</td><td>131,550,992&#160;</td><td style="text-align: right;">.165</td><td style="text-align: right;">2024/05/13 12:22:21.707</td></tr>
+<tr><td>&#160;</td><td>Settings changed, removing cached Definitions.&#160;</td><td>&#160;</td><td style="text-align: right;">.225</td><td style="text-align: right;">2024/05/13 12:22:21.767</td></tr>
+<tr><td>Set Constant Tokens from Settings&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">.230</td><td style="text-align: right;">2024/05/13 12:22:21.772</td></tr>
+<tr><td>Application Security&#160;</td><td>Enabled&#160;</td><td>False&#160;</td><td style="text-align: right;">.717</td><td style="text-align: right;">2024/05/13 12:22:22.259</td></tr>
+<tr><td>Data Cache&#160;</td><td>Location&#160;</td><td>C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\DemoApp\rdDataCache&#160;</td><td style="text-align: right;">2.251</td><td style="text-align: right;">2024/05/13 12:22:23.793</td></tr>
+<tr><td>Hybrid Data Engine&#160;</td><td>MemoryStreamLimit&#160;</td><td>10 MB&#160;</td><td style="text-align: right;">2.251</td><td style="text-align: right;">2024/05/13 12:22:23.793</td></tr>
+<tr><td>Determine Definition&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">2.268</td><td style="text-align: right;">2024/05/13 12:22:23.810</td></tr>
+<tr><td>&#160;</td><td>Requested Definition&#160;</td><td>Default&#160;</td><td style="text-align: right;">2.373</td><td style="text-align: right;">2024/05/13 12:22:23.915</td></tr>
+<tr><td>&#160;</td><td>Read Definition from Cache&#160;</td><td>False&#160;</td><td style="text-align: right;">2.452</td><td style="text-align: right;">2024/05/13 12:22:23.994</td></tr>
+<tr><td>Report Show Modes&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">2.718</td><td style="text-align: right;">2024/05/13 12:22:24.260</td></tr>
+<tr><td>Apply Theme&#160;</td><td>Theme Name&#160;</td><td>Signal&#160;</td><td style="text-align: right;">2.718</td><td style="text-align: right;">2024/05/13 12:22:24.260</td></tr>
+<tr><td>&#160;</td><td>Applied Modifier&#160;</td><td>Update Count: 25&#160;</td><td style="text-align: right;">2.917</td><td style="text-align: right;">2024/05/13 12:22:24.459</td></tr>
+<tr><td>&#160;</td><td>&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-0369c9952f1c4c289beb920af5b45a7f-rdDebug.txt">View Modifier Log</a>&#160;</td><td style="text-align: right;">2.935</td><td style="text-align: right;">2024/05/13 12:22:24.477</td></tr>
+<tr><td>&#160;</td><td>&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-8ddf68b2f05b48768ae47d07fac4f650-rdDebug.xml">View Modified Definition</a>&#160;</td><td style="text-align: right;">2.954</td><td style="text-align: right;">2024/05/13 12:22:24.496</td></tr>
+<tr><td>Get DataLayer.Static&#160;</td><td>ID = &#160;</td><td>&#160;</td><td style="text-align: right;">3.068</td><td style="text-align: right;">2024/05/13 12:22:24.610</td></tr>
+<tr><td>&#160;</td><td>Processed Row Count&#160;</td><td>4&#160;</td><td style="text-align: right;">3.269</td><td style="text-align: right;">2024/05/13 12:22:24.811</td></tr>
+<tr><td>&#160;</td><td>Processed Data&#160;</td><td><a href="../rdTemplate/rdDebugData.htm?url=../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-a500bac027694eb6af4d559286897df7-rdDebug.xml">View Memory Stream Data (206 bytes)</a>&#160;</td><td style="text-align: right;">3.269</td><td style="text-align: right;">2024/05/13 12:22:24.811</td></tr>
+<tr><td>&#160;</td><td>Finalize DataLayers&#160;</td><td>&#160;</td><td style="text-align: right;">3.484</td><td style="text-align: right;">2024/05/13 12:22:25.026</td></tr>
+<tr><td>&#160;</td><td>Data Engine&#160;</td><td>Data processing completed.&#160;</td><td style="text-align: right;">3.489</td><td style="text-align: right;">2024/05/13 12:22:25.031</td></tr>
+<tr><td>&#160;</td><td>AutoColumns&#160;</td><td>DataLayer cached and converted to XMLFile.&#160;</td><td style="text-align: right;">3.498</td><td style="text-align: right;">2024/05/13 12:22:25.040</td></tr>
+<tr><td>Apply Theme&#160;</td><td>Theme Name&#160;</td><td>Signal&#160;</td><td style="text-align: right;">3.513</td><td style="text-align: right;">2024/05/13 12:22:25.055</td></tr>
+<tr><td>&#160;</td><td>Applied Modifier&#160;</td><td>Update Count: 3&#160;</td><td style="text-align: right;">3.575</td><td style="text-align: right;">2024/05/13 12:22:25.117</td></tr>
+<tr><td>&#160;</td><td>&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-af53ff7f4b3447ed85ba89ddbf5fab0f-rdDebug.txt">View Modifier Log</a>&#160;</td><td style="text-align: right;">3.580</td><td style="text-align: right;">2024/05/13 12:22:25.122</td></tr>
+<tr><td>&#160;</td><td>&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-c16f260e768d445489f7c240543c2893-rdDebug.xml">View Modified Definition</a>&#160;</td><td style="text-align: right;">3.601</td><td style="text-align: right;">2024/05/13 12:22:25.143</td></tr>
+<tr><td>Show XSL&#160;</td><td>XSL Data&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-8f775bb2e88d47069fbc370ae23b752d-rdDebug.txt">View XSL</a>&#160;</td><td style="text-align: right;">3.850</td><td style="text-align: right;">2024/05/13 12:22:25.392</td></tr>
+<tr><td>Load XSL&#160;</td><td>Success&#160;</td><td>True&#160;</td><td style="text-align: right;">3.898</td><td style="text-align: right;">2024/05/13 12:22:25.440</td></tr>
+<tr><td>Get XML DataLayers&#160;</td><td>&#160;</td><td>&#160;</td><td style="text-align: right;">4.178</td><td style="text-align: right;">2024/05/13 12:22:25.720</td></tr>
+<tr><td>&#160;</td><td>Finalize DataLayers&#160;</td><td>&#160;</td><td style="text-align: right;">4.202</td><td style="text-align: right;">2024/05/13 12:22:25.744</td></tr>
+<tr><td>&#160;</td><td>Data Engine&#160;</td><td>Data processing completed.&#160;</td><td style="text-align: right;">4.202</td><td style="text-align: right;">2024/05/13 12:22:25.744</td></tr>
+<tr><td>Generated DataLayers&#160;</td><td>File stream&#160;</td><td><a href="../rdTemplate/rdDebugData.htm?url=../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-492759f3df2445d89262cd63162b4054-rdDebug.xml">View Data</a>&#160;</td><td style="text-align: right;">4.219</td><td style="text-align: right;">2024/05/13 12:22:25.761</td></tr>
+<tr><td>&#160;</td><td>DataLayer Summary XML&#160;</td><td><a href="../rdTemplate/rdDebugData.htm?url=../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-ab1f8cbb45d444b9b5e86a82a2af6b20-rdDebug.xml">View Data</a>&#160;</td><td style="text-align: right;">4.244</td><td style="text-align: right;">2024/05/13 12:22:25.786</td></tr>
+<tr><td>XSL Transformation&#160;</td><td>Start&#160;</td><td>&#160;</td><td style="text-align: right;">4.268</td><td style="text-align: right;">2024/05/13 12:22:25.810</td></tr>
+<tr><td>&#160;</td><td>Finish&#160;</td><td>&#160;</td><td style="text-align: right;">4.402</td><td style="text-align: right;">2024/05/13 12:22:25.944</td></tr>
+<tr><td>HTML Token Replacement&#160;</td><td>Start&#160;</td><td>HTML Size: 7,102&#160;</td><td style="text-align: right;">4.446</td><td style="text-align: right;">2024/05/13 12:22:25.988</td></tr>
+<tr><td>&#160;</td><td>Finish&#160;</td><td>HTML Size: 7,107&#160;</td><td style="text-align: right;">4.451</td><td style="text-align: right;">2024/05/13 12:22:25.993</td></tr>
+<tr><td>SVG chart&#160;</td><td>Started processing&#160;</td><td><a href="../rdDownload/FA946A49E6CC6662F2F7CAE81A7D4C4C-d043047e0bfa4753860901528e73f946-f8afd6c4b9884759bdd126e40aafb7db-rdDebug.xml">View Definition</a>&#160;</td><td style="text-align: right;">4.708</td><td style="text-align: right;">2024/05/13 12:22:26.250</td></tr>
+<tr><td>SVG Chart.Options&#160;</td><td>Creation Started&#160;</td><td>&#160;</td><td style="text-align: right;">4.781</td><td style="text-align: right;">2024/05/13 12:22:26.323</td></tr>
+<tr><td>Hybrid Data Engine&#160;</td><td>MemoryStreamLimit&#160;</td><td>10 MB&#160;</td><td style="text-align: right;">4.823</td><td style="text-align: right;">2024/05/13 12:22:26.365</td></tr>
+<tr><td>SVG Chart.Options&#160;</td><td>Creation Finished&#160;</td><td>&#160;</td><td style="text-align: right;">4.952</td><td style="text-align: right;">2024/05/13 12:22:26.494</td></tr>
+<tr><td>SVG Chart.Serialization&#160;</td><td>Started&#160;</td><td>&#160;</td><td style="text-align: right;">4.956</td><td style="text-align: right;">2024/05/13 12:22:26.498</td></tr>
+<tr><td>&#160;</td><td>Finished&#160;</td><td>&#160;</td><td style="text-align: right;">5.108</td><td style="text-align: right;">2024/05/13 12:22:26.650</td></tr>
+<tr><td>Convert &lt;BR&gt;&lt;/BR&gt; to &lt;BR /&gt;&#160;</td><td>Start&#160;</td><td>&#160;</td><td style="text-align: right;">5.136</td><td style="text-align: right;">2024/05/13 12:22:26.678</td></tr>
+<tr><td>&#160;</td><td>Finish&#160;</td><td>HTML Size: 7,600&#160;</td><td style="text-align: right;">5.136</td><td style="text-align: right;">2024/05/13 12:22:26.678</td></tr>
+<tr><td>File Cleanup&#160;</td><td>Queued cleanup thread.&#160;</td><td>&#160;</td><td style="text-align: right;">5.168</td><td style="text-align: right;">2024/05/13 12:22:26.710</td></tr>
+<tr><td>&#160;</td><td>rdTempFileCleanupInterval&#160;</td><td>5 minutes&#160;</td><td style="text-align: right;">5.173</td><td style="text-align: right;">2024/05/13 12:22:26.715</td></tr>
+<tr><td>&#160;</td><td>rdTempFileLifespan&#160;</td><td>60 minutes&#160;</td><td style="text-align: right;">5.177</td><td style="text-align: right;">2024/05/13 12:22:26.719</td></tr>
+<tr><td>Debug&#160;</td><td>Completed&#160;</td><td>2024/05/13 12:22:26.8 PM&#160;</td><td style="text-align: right;">5.279</td><td style="text-align: right;">2024/05/13 12:22:26.821</td></tr>
+<tr id="rdCurrentPosition" style="display: none;"></tr>
+                          </table>
+                      </td>
+                  </tr>
+                  <tr><td class="SmallNote">* Generating this debugger information increases the overall elapsed time.</td></tr>
+                  <tr><td>&#160;</td></tr>
+              </table>
+              <table border="0" class="BodyTable">
+                  <tr><td><rdErrorReport /></td></tr>
+              </table>
+              <br />
+              <a href="javascript:rdDebugDownloadTrace()">Download ZIPed Debugger Trace</a>
+          </span>
+      </rdDetailedReport>
+    </body>
+</html>
